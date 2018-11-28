@@ -123,7 +123,7 @@ class GlobalFilterDefs(object):
 DEFS = None
 
 if os.path.isfile(settings.SETTINGS["paths"]["FILTER_DEFS_PATH"]):
-    '''user must create caster/user/fdefs.txt for it to get picked up here'''
+    '''user must create .caster/words.txt for it to get picked up here'''
     with io.open(
             settings.SETTINGS["paths"]["FILTER_DEFS_PATH"], "rt", encoding="utf-8") as f:
         lines = f.readlines()

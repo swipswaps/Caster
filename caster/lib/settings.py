@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
 
+from os.path import expanduser
 import collections
 import io
 import toml
 import os
 import sys
-import errno
 import _winreg
+import copy
+
+    
+_USERSPACE = expanduser("~").replace("\\", "/") + "/.caster"
+if not os.path.exists(_USERSPACE):
+    os.mkdir(_USERSPACE)
 
 SETTINGS = {}
-_SETTINGS_PATH = os.path.realpath(__file__).split("lib")[0] + "bin\\data\\settings.toml"
+_SETTINGS_PATH = _USERSPACE + "/settings.toml"
 BASE_PATH = os.path.realpath(__file__).split("\\lib")[0].replace("\\", "/")
 
 # title
-SOFTWARE_VERSION_NUMBER = "0.5.11"
+SOFTWARE_VERSION_NUMBER = "0.6.0"
 SOFTWARE_NAME = "Caster v " + SOFTWARE_VERSION_NUMBER
 HOMUNCULUS_VERSION = "HMC v " + SOFTWARE_VERSION_NUMBER
 HMC_TITLE_RECORDING = " :: Recording Manager"
@@ -115,7 +121,6 @@ def _find_natspeak():
     print("Cannot find dragon engine path")
     return ""
 
-
 """ 
 The defaults for every setting. Could be moved out into its own file.
 """
@@ -124,25 +129,25 @@ _DEFAULT_SETTINGS = {
         "BASE_PATH": BASE_PATH,
 
         # DATA
-        "ALIAS_PATH": BASE_PATH + "/bin/data/aliases.toml",
-        "CCR_CONFIG_PATH": BASE_PATH + "/bin/data/ccr.toml",
-        "DLL_PATH": BASE_PATH + "/lib/dll/",
-        "FILTER_DEFS_PATH": BASE_PATH + "/user/words.txt",
-        "LOG_PATH": BASE_PATH + "/bin/data/log.txt",
-        "RECORDED_MACROS_PATH": BASE_PATH + "/bin/data/recorded_macros.toml",
-        "SAVED_CLIPBOARD_PATH": BASE_PATH + "/bin/data/clipboard.toml",
-        "SIKULI_SCRIPTS_FOLDER_PATH": BASE_PATH + "/asynch/sikuli/scripts",
+        "ALIAS_PATH": _USERSPACE + "/aliases.toml",
+        "CCR_CONFIG_PATH": _USERSPACE + "/ccr.toml",
+        "FILTER_DEFS_PATH": _USERSPACE + "/words.txt",
+        "LOG_PATH": _USERSPACE + "/caster.log",
+        "RECORDED_MACROS_PATH": _USERSPACE + "/recorded_macros.toml",
+        "SAVED_CLIPBOARD_PATH": _USERSPACE + "/clipboard.toml",
+        "SIKULI_SCRIPTS_FOLDER_PATH": _USERSPACE + "/sikuli/scripts",
+        "CONFIGDEBUGTXT_PATH": _USERSPACE + "/configdebug.txt",
 
         # REMOTE_DEBUGGER_PATH is the folder in which pydevd.py can be found
         "REMOTE_DEBUGGER_PATH": "",
 
         # EXECUTABLES
         "DEFAULT_BROWSER_PATH": "C:/Program Files (x86)/Mozilla Firefox/firefox.exe",
+        "DLL_PATH": BASE_PATH + "/lib/dll/",
         "DOUGLAS_PATH": BASE_PATH + "/asynch/mouse/grids.py",
         "ENGINE_PATH": _validate_engine_path(),
         "HOMUNCULUS_PATH": BASE_PATH + "/asynch/hmc/h_launch.py",
         "LEGION_PATH": BASE_PATH + "/asynch/mouse/legion.py",
-        "MEDIA_PATH": BASE_PATH + "/bin/media",
         "RAINBOW_PATH": BASE_PATH + "/asynch/mouse/grids.py",
         "REBOOT_PATH": BASE_PATH + "/bin/reboot.bat",
         "REBOOT_PATH_WSR": BASE_PATH + "/bin/reboot_wsr.bat",
@@ -152,9 +157,6 @@ _DEFAULT_SETTINGS = {
         "SIKULI_SCRIPTS_JAR_PATH": "",
         "SIKULI_SERVER_PATH": BASE_PATH + "/asynch/sikuli/scripts/xmlrpc_server.sikuli",
         "WSR_PATH": "C:/Windows/Speech/Common/sapisvr.exe",
-
-        # CCR
-        "CONFIGDEBUGTXT_PATH": BASE_PATH + "/bin/data/configdebug.txt",
 
         # PYTHON
         "PYTHONW": "C:/Python27/pythonw",
@@ -218,16 +220,12 @@ _DEFAULT_SETTINGS = {
         "history_playback_delay_secs": 1.0,
         "legion_vertical_columns": 30,
     },
-    "pronunciations": {
-        "c++": "C plus plus",
-        "jquery": "J query",
-    },
+    
     "one time warnings": {}
 }
 """ 
 Internal Methods
 """
-
 
 def _save(data, path):
     '''only to be used for settings file'''
